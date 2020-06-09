@@ -17,12 +17,11 @@ if(!file_exists($csvPath)){
 		 $request = new GetOrdersRequest();
 		 // Set parameters
 		 $request->setMax(25)
-			  ->setPaginate(false)
-			  ->setStartDate($last_execution);
+			  ->setPaginate(false);
 		  $result = $api->getOrders($request);
 		  
 		  //Download result
-		  downloadAPIResult($result, $api_url, $api_key);
+		  downloadAPIResult($result, $last_execution, $api_url, $api_key);
 
 	} catch (\Exception $e) {
 		// An exception is thrown if the requested object is not found or if an error occurs
@@ -38,7 +37,7 @@ else{
 /*
 * If there are new orders, download them as csv file.
 */
-function downloadAPIResult($result, $api_url, $api_key){	
+function downloadAPIResult($result, $last_execution, $api_url, $api_key){	
 	$ordercount = $result->getTotalCount();
 		
 	//Check, if there are new orders
@@ -90,7 +89,7 @@ function downloadAPIResult($result, $api_url, $api_key){
 			
 			/*
 			echo "<pre>";
-				var_dump( $orderData );
+				var_dump( $result );
 			echo "</pre>";	
 			*/			
 			
@@ -104,15 +103,17 @@ function downloadAPIResult($result, $api_url, $api_key){
 					$api->acceptOrder($request);
 				}		 
 			}
+			
+			$last_updated_date = $orderLines->getItems()[0]->getData()["history"]->getData()["last_updated_date"];
+			$last_execution_date = DateTime::createFromFormat('Y-m-d\TH:i:s', $last_execution);			
+			
 			//Only write order, if it was accepted
-			else if($orderState == "SHIPPING"){
+			if($orderState == "SHIPPING" && $last_updated_date > $last_execution_date){
 				//Cycle through orderlines
-				foreach($orderLines->getItems() as $ol){
+				foreach($orderLines->getItems() as $ol){					
 					$orderAdditonalFields = $orderData["order_additional_fields"];
 					$orderCustomer = $orderData["customer"]->getData()["billing_address"]->getData();
-					$orderShipping = $orderData["customer"]->getData()["shipping_address"]->getData();
-					
-					
+					$orderShipping = $orderData["customer"]->getData()["shipping_address"]->getData();							
 					$orderOffer = $ol->getData()["offer"];
 					$orderHistory = $ol->getData()["history"];
 					
