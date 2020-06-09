@@ -87,11 +87,11 @@ function downloadAPIResult($result, $api_url, $api_key){
 			
 			$orderId = $orderData["id"];
 			
-			
+			/*
 			echo "<pre>";
 				var_dump( $result );
 			echo "</pre>";	
-						
+			*/		
 			
 			//Accept order if it wasn't yet
 			if($orderState == "WAITING_ACCEPTANCE"){	
@@ -116,7 +116,7 @@ function downloadAPIResult($result, $api_url, $api_key){
 					
 					//Add items of orders to array
 					array_push($order, array(
-						$orderAdditonalFields->getItems()[0]->getData()["value"],
+						$orderAdditonalFields->getItems()[count($orderAdditonalFields->getItems())-1]->getData()["value"],
 						$orderId,
 						$orderCustomer["company"],
 						$orderCustomer["firstname"] . " " . $orderCustomer["lastname"],
@@ -163,7 +163,7 @@ function downloadAPIResult($result, $api_url, $api_key){
 * Write the last execution date to txt.
 */
 function writeLast(){
-	$time = date("Y-m-d\TH:i:s", time());
+	$time = date("Y-m-d\TH:i:s", strtotime('-1 minute'));
 	$fp = fopen('last.txt', 'w+');
 	fwrite($fp, $time);
 	fclose($fp);
