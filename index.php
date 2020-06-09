@@ -98,13 +98,14 @@ function downloadAPIResult($result, $api_url, $api_key){
 			*/			
 			
 			//Accept order if it wasn't yet
-			//TODO: Accept multiple orders
-			if($orderState == "WAITING_ACCEPTANCE"){				
-				 $api = new ShopApiClient($api_url, $api_key, null);
-				 $request = new AcceptOrderRequest($orderId, [
-				     new AcceptOrderLine(['id' => $orderLines->getItems()[0]->getData()["id"], 'accepted' => true])
-				 ]);
-				 $api->acceptOrder($request);
+			if($orderState == "WAITING_ACCEPTANCE"){	
+				foreach($orderLines->getItems() as $ol){
+					$api = new ShopApiClient($api_url, $api_key, null);
+					$request = new AcceptOrderRequest($orderId, [
+						new AcceptOrderLine(['id' => $ol->getData()["id"], 'accepted' => true])
+					]);
+					$api->acceptOrder($request);
+				}		 
 			}
 			//Only write order, if it was accepted
 			else if($orderState == "SHIPPING"){
