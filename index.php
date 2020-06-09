@@ -74,18 +74,15 @@ function downloadAPIResult($result, $api_url, $api_key){
 			'Notiz',
 			'ID_OFFER',
 			'ID_ORDER_UNIT',
+			'Anzahl bestellt',
 			'Bestellzeitpunkt',
 			'Updatezeitpunkt',
-			'Abholzeitpunkt',
-			'Anzahl bestellt'
+			'Abholzeitpunkt'
 		));
 		
 		//Cycle throught items
 		foreach($orderItems as $o){
 			$orderData = $o->getData();
-			$orderAdditonalFields = $orderData["order_additional_fields"];
-			$orderCustomer = $orderData["customer"]->getData()["billing_address"]->getData();
-			$orderShipping = $orderData["customer"]->getData()["shipping_address"]->getData();
 			$orderLines = $orderData["order_lines"];
 			$orderState = $orderLines->getItems()[0]->getData()["status"]->getData()["state"];
 			
@@ -111,6 +108,11 @@ function downloadAPIResult($result, $api_url, $api_key){
 			else if($orderState == "SHIPPING"){
 				//Cycle through orderlines
 				foreach($orderLines->getItems() as $ol){
+					$orderAdditonalFields = $orderData["order_additional_fields"];
+					$orderCustomer = $orderData["customer"]->getData()["billing_address"]->getData();
+					$orderShipping = $orderData["customer"]->getData()["shipping_address"]->getData();
+					
+					
 					$orderOffer = $ol->getData()["offer"];
 					$orderHistory = $ol->getData()["history"];
 					
@@ -135,14 +137,14 @@ function downloadAPIResult($result, $api_url, $api_key){
 						$ol->getData()["offer"]->getData()["sku"],
 						$orderOffer->getData()["price"],
 						$ol->getData()["shipping_price"],
-						$ol->getData()["commission"]->getData()["fee"],
+						$ol->getData()["commission"]->getData()["fee"] / $ol->getData()["quantity"],
 						$orderData["has_customer_message"],
 						'',
 						'',
+						$ol->getData()["quantity"],
 						$orderHistory->getData()["created_date"]->format('Y-m-d\TH:i:s'),
 						$orderHistory->getData()["last_updated_date"]->format('Y-m-d\TH:i:s'),
-						gmdate("Y-m-d\TH:i:s", time()+3600),
-						$ol->getData()["quantity"]						
+						gmdate("Y-m-d\TH:i:s", time()+3600)						
 					));
 				}
 
