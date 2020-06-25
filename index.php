@@ -94,6 +94,8 @@ function downloadAPIResult($result, $api_url, $api_key){
 			*/		
 			
 			//Accept order if it wasn't yet
+			//
+			//TODO: Fix accepting of multiple orders
 			if($orderState == "WAITING_ACCEPTANCE"){	
 				foreach($orderLines->getItems() as $ol){
 					$api = new ShopApiClient($api_url, $api_key, null);
@@ -106,6 +108,14 @@ function downloadAPIResult($result, $api_url, $api_key){
 			
 			//Only write order, if it was accepted
 			if($orderState == "SHIPPING"){
+				//Get shipping price
+				//We need the shipping price in every line of the csv, or our erp system throws an error
+				$shippingPrice = 0;
+				foreach($orderLines->getItems() as $ol){
+					$sp = $ol->getData()["shipping_price"];
+					if($sp > 0){ $shippingPrice = $sp; }
+				}
+				
 				//Cycle through orderlines
 				foreach($orderLines->getItems() as $ol){					
 					$orderAdditonalFields = $orderData["order_additional_fields"];
@@ -134,7 +144,7 @@ function downloadAPIResult($result, $api_url, $api_key){
 						'',
 						$ol->getData()["offer"]->getData()["sku"],
 						$orderOffer->getData()["price"],
-						$ol->getData()["shipping_price"],
+						$shippingPrice,
 						$ol->getData()["commission"]->getData()["fee"] / $ol->getData()["quantity"],
 						$orderData["has_customer_message"],
 						$orderData["paymentType"],
