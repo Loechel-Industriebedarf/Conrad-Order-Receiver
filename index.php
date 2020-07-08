@@ -87,11 +87,7 @@ function downloadAPIResult($result, $api_url, $api_key){
 			
 			$orderId = $orderData["id"];
 			
-			/*
-			echo "<pre>";
-				var_dump( $result );
-			echo "</pre>";	
-			*/		
+			//echo "<pre>". var_dump( $result ) . "</pre>";	
 			
 			//Accept order if it wasn't yet
 			//
@@ -104,7 +100,38 @@ function downloadAPIResult($result, $api_url, $api_key){
 					]);
 					$api->acceptOrder($request);
 				}		 
-			}		
+			}	
+			
+			/*
+			if($orderState == "WAITING_ACCEPTANCE"){	
+				$api = new ShopApiClient($api_url, $api_key, null);
+				$request = new AcceptOrderRequest('MP00108823-01-A', [
+					new AcceptOrderLine(['id' => 'MP00108823-01-A-1', 'accepted' => true]),
+					new AcceptOrderLine(['id' => 'MP00108823-01-A-2', 'accepted' => true]),
+					new AcceptOrderLine(['id' => 'MP00108823-01-A-3', 'accepted' => true])
+				]);
+				$api->acceptOrder($request);	 
+			}	
+			*/
+			
+			
+			// This was a test to accept multiple orders. It failed.
+			/*
+			if($orderState == "WAITING_ACCEPTANCE"){	
+				$acceptOrderArray = array();
+			
+				foreach($orderLines->getItems() as $ol){
+					array_push($acceptOrderArray, new AcceptOrderLine(['id' => $ol->getData()["id"], 'accepted' => true]));
+				}	
+				
+				// echo "<pre>".var_dump($acceptOrderArray)."</pre>";
+				
+				$api = new ShopApiClient($api_url, $api_key, null);
+				$request = new AcceptOrderRequest($orderId, $orderArray);
+				$api->acceptOrder($request);
+			}	
+			*/			
+			
 			
 			//Only write order, if it was accepted
 			if($orderState == "SHIPPING"){
