@@ -50,34 +50,7 @@ function downloadAPIResult($result, $api_url, $api_key){
 		$orderItems = $result->getItems();
 		
 		//Generate Headline
-		array_push($order, array(
-			'Mail',
-			'Bestellungs-ID',
-			'Rechnungsfirma 1',
-			'Rechnungsfirma 2',
-			'Rechnungsstrasse',
-			'RechnungsPLZ',
-			'Rechnungsort',
-			'Rechnungsland',
-			'Rechnungstelefon',
-			'Versandfirma 1',
-			'Versandfirma 2',
-			'Versandstrasse',
-			'VersandPLZ',
-			'Versandort',
-			'Versandland',
-			'Versandtelefon',
-			'Artikelnummer',
-			'Preis',
-			'Versandkosten',
-			'Nebenkosten',
-			'Notiz',
-			'Bezahlart',
-			'Anzahl bestellt',
-			'Bestellzeitpunkt',
-			'Updatezeitpunkt',
-			'Abholzeitpunkt'
-		));
+		$order = generateHeadline($order);
 		
 		//Cycle throught items
 		foreach($orderItems as $o){
@@ -90,33 +63,6 @@ function downloadAPIResult($result, $api_url, $api_key){
 			//echo "<pre>". var_dump( $result ) . "</pre>";	
 			
 			//Accept order if it wasn't yet
-			//
-			//TODO: Fix accepting of multiple orders
-			if($orderState == "WAITING_ACCEPTANCE"){	
-				foreach($orderLines->getItems() as $ol){
-					$api = new ShopApiClient($api_url, $api_key, null);
-					$request = new AcceptOrderRequest($orderId, [
-						new AcceptOrderLine(['id' => $ol->getData()["id"], 'accepted' => true])
-					]);
-					$api->acceptOrder($request);
-				}		 
-			}	
-			
-			/*
-			if($orderState == "WAITING_ACCEPTANCE"){	
-				$api = new ShopApiClient($api_url, $api_key, null);
-				$request = new AcceptOrderRequest('MP00108823-01-A', [
-					new AcceptOrderLine(['id' => 'MP00108823-01-A-1', 'accepted' => true]),
-					new AcceptOrderLine(['id' => 'MP00108823-01-A-2', 'accepted' => true]),
-					new AcceptOrderLine(['id' => 'MP00108823-01-A-3', 'accepted' => true])
-				]);
-				$api->acceptOrder($request);	 
-			}	
-			*/
-			
-			
-			// This was a test to accept multiple orders. It failed.
-			/*
 			if($orderState == "WAITING_ACCEPTANCE"){	
 				$acceptOrderArray = array();
 			
@@ -127,14 +73,13 @@ function downloadAPIResult($result, $api_url, $api_key){
 				// echo "<pre>".var_dump($acceptOrderArray)."</pre>";
 				
 				$api = new ShopApiClient($api_url, $api_key, null);
-				$request = new AcceptOrderRequest($orderId, $orderArray);
+				$request = new AcceptOrderRequest($orderId, $acceptOrderArray);
 				$api->acceptOrder($request);
+				
+				echo $orderId." was accepted successfully. ";
 			}	
-			*/			
-			
-			
 			//Only write order, if it was accepted
-			if($orderState == "SHIPPING"){
+			else if($orderState == "SHIPPING"){
 				//Get shipping price
 				//We need the shipping price in every line of the csv, or our erp system throws an error
 				$shippingPrice = 0;
@@ -147,7 +92,8 @@ function downloadAPIResult($result, $api_url, $api_key){
 				foreach($orderLines->getItems() as $ol){					
 					$orderAdditonalFields = $orderData["order_additional_fields"];
 					$orderCustomer = $orderData["customer"]->getData()["billing_address"]->getData();
-					$orderShipping = $orderData["customer"]->getData()["shipping_address"]->getData();							
+					$orderShipping = $orderData["customer"]->getData()["shipping_address"]->getData();		
+					
 					$orderOffer = $ol->getData()["offer"];
 					$orderHistory = $ol->getData()["history"];
 					
@@ -182,7 +128,7 @@ function downloadAPIResult($result, $api_url, $api_key){
 					));
 				}
 
-				echo "New orders got parsed.";
+				echo $orderId." got parsed. ";
 
 				//Write order to csv
 				writeToCsv($order);
@@ -192,8 +138,43 @@ function downloadAPIResult($result, $api_url, $api_key){
 			}
 			
 		}	
-				
+	
 	}
+}
+
+/*
+*
+*/
+function generateHeadline($order){
+		array_push($order, array(
+			'Mail',
+			'Bestellungs-ID',
+			'Rechnungsfirma 1',
+			'Rechnungsfirma 2',
+			'Rechnungsstrasse',
+			'RechnungsPLZ',
+			'Rechnungsort',
+			'Rechnungsland',
+			'Rechnungstelefon',
+			'Versandfirma 1',
+			'Versandfirma 2',
+			'Versandstrasse',
+			'VersandPLZ',
+			'Versandort',
+			'Versandland',
+			'Versandtelefon',
+			'Artikelnummer',
+			'Preis',
+			'Versandkosten',
+			'Nebenkosten',
+			'Notiz',
+			'Bezahlart',
+			'Anzahl bestellt',
+			'Bestellzeitpunkt',
+			'Updatezeitpunkt',
+			'Abholzeitpunkt'
+		));
+		return $order;
 }
 
 /*
