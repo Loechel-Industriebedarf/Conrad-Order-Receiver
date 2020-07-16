@@ -26,8 +26,8 @@ if(!file_exists($csvPath)){
 
 	} catch (\Exception $e) {
 		// An exception is thrown if the requested object is not found or if an error occurs
-		echo "Exception:<br><br>";
-		var_dump($e);
+		echo "Exception:<br><br> ";
+		//var_dump($e);
 	}
 }
 else{
@@ -143,38 +143,38 @@ function downloadAPIResult($result, $api_url, $api_key){
 }
 
 /*
-*
+* Generates the headline for the csv file
 */
 function generateHeadline($order){
-		array_push($order, array(
-			'Mail',
-			'Bestellungs-ID',
-			'Rechnungsfirma 1',
-			'Rechnungsfirma 2',
-			'Rechnungsstrasse',
-			'RechnungsPLZ',
-			'Rechnungsort',
-			'Rechnungsland',
-			'Rechnungstelefon',
-			'Versandfirma 1',
-			'Versandfirma 2',
-			'Versandstrasse',
-			'VersandPLZ',
-			'Versandort',
-			'Versandland',
-			'Versandtelefon',
-			'Artikelnummer',
-			'Preis',
-			'Versandkosten',
-			'Nebenkosten',
-			'Notiz',
-			'Bezahlart',
-			'Anzahl bestellt',
-			'Bestellzeitpunkt',
-			'Updatezeitpunkt',
-			'Abholzeitpunkt'
-		));
-		return $order;
+	array_push($order, array(
+		'Mail',
+		'Bestellungs-ID',
+		'Rechnungsfirma 1',
+		'Rechnungsfirma 2',
+		'Rechnungsstrasse',
+		'RechnungsPLZ',
+		'Rechnungsort',
+		'Rechnungsland',
+		'Rechnungstelefon',
+		'Versandfirma 1',
+		'Versandfirma 2',
+		'Versandstrasse',
+		'VersandPLZ',
+		'Versandort',
+		'Versandland',
+		'Versandtelefon',
+		'Artikelnummer',
+		'Preis',
+		'Versandkosten',
+		'Nebenkosten',
+		'Notiz',
+		'Bezahlart',
+		'Anzahl bestellt',
+		'Bestellzeitpunkt',
+		'Updatezeitpunkt',
+		'Abholzeitpunkt'
+	));
+	return $order;
 }
 
 /*
