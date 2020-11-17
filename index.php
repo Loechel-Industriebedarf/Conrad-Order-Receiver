@@ -59,8 +59,11 @@ function downloadAPIResult($result, $api_url, $api_key){
 			$orderState = $orderLines->getItems()[0]->getData()["status"]->getData()["state"];
 			
 			$orderId = $orderData["id"];
-			
-			//echo "<pre>". var_dump( $result ) . "</pre>";	
+
+			/*echo "<pre>";
+			echo var_dump( $o );
+			echo "</pre>";
+			echo "<br><br><br>";*/
 			
 			//Accept order if it wasn't yet
 			if($orderState == "WAITING_ACCEPTANCE"){	
@@ -70,71 +73,83 @@ function downloadAPIResult($result, $api_url, $api_key){
 					array_push($acceptOrderArray, new AcceptOrderLine(['id' => $ol->getData()["id"], 'accepted' => true]));
 				}	
 				
-				// echo "<pre>".var_dump($acceptOrderArray)."</pre>";
+				//echo "<pre>".var_dump($acceptOrderArray)."</pre>";
 				
 				$api = new ShopApiClient($api_url, $api_key, null);
 				$request = new AcceptOrderRequest($orderId, $acceptOrderArray);
 				$api->acceptOrder($request);
 				
-				echo $orderId." was accepted successfully. ";
+				echo $orderId." was accepted successfully.";
 			}	
 			//Only write order, if it was accepted
 			else if($orderState == "SHIPPING"){
-				//Get shipping price
-				//We need the shipping price in every line of the csv, or our erp system throws an error
-				$shippingPrice = 0;
-				foreach($orderLines->getItems() as $ol){
-					$sp = $ol->getData()["shipping_price"];
-					if($sp > 0){ $shippingPrice = $sp; }
+				$diff_minutes = (time()+3600 - $orderData["acceptance_decision_date"]->getTimestamp()) / 60;
+				//echo $diff_minutes."<br><br>";
+				
+				//Only import orders younger than 60 minutes
+				if($diff_minutes < 60){
+					//Get shipping price
+					//We need the shipping price in every line of the csv, or our erp system throws an error
+					$shippingPrice = 0;
+					foreach($orderLines->getItems() as $ol){
+						$sp = $ol->getData()["shipping_price"];
+						if($sp > 0){ $shippingPrice = $sp; }
+					}
+					
+					//Cycle through orderlines
+					foreach($orderLines->getItems() as $ol){	
+						/* echo "<pre>";
+						echo var_dump( $ol );
+						echo "</pre>"; */
+						
+						$orderAdditonalFields = $orderData["order_additional_fields"];
+						$orderCustomer = $orderData["customer"]->getData()["billing_address"]->getData();
+						$orderShipping = $orderData["customer"]->getData()["shipping_address"]->getData();		
+						
+						$orderOffer = $ol->getData()["offer"];
+						$orderHistory = $ol->getData()["history"];
+						
+						//Add items of orders to array
+						array_push($order, array(
+							$orderAdditonalFields->getItems()[count($orderAdditonalFields->getItems())-1]->getData()["value"],
+							$orderId,
+							$orderCustomer["company"],
+							$orderCustomer["firstname"] . " " . $orderCustomer["lastname"],
+							$orderCustomer["street_1"] . " " . $orderCustomer["street_2"],
+							$orderCustomer["zip_code"],
+							$orderCustomer["city"],
+							$orderCustomer["country"],
+							'',
+							$orderCustomer["company"],
+							$orderShipping["firstname"] . " " . $orderShipping["lastname"],
+							$orderShipping["street_1"] . " " . $orderShipping["street_2"],
+							$orderShipping["zip_code"],
+							$orderShipping["city"],
+							$orderShipping["country"],
+							'',
+							$ol->getData()["offer"]->getData()["sku"],
+							$orderOffer->getData()["price"],
+							$shippingPrice,
+							$ol->getData()["commission"]->getData()["fee"] / $ol->getData()["quantity"],
+							$orderData["has_customer_message"],
+							$orderData["paymentType"],
+							$ol->getData()["quantity"],
+							$orderHistory->getData()["created_date"]->format('Y-m-d\TH:i:s'),
+							$orderHistory->getData()["last_updated_date"]->format('Y-m-d\TH:i:s'),
+							gmdate("Y-m-d\TH:i:s", time()+3600),
+							$ol->getData()["offer"]->getData()["product"]->getData()["title"]						
+						));
+					}
+
+					echo $orderId." got parsed. ";
+
+					//Write order to csv
+					writeToCsv($order);
+				
+					//Write current date to txt
+					writeLast();
 				}
 				
-				//Cycle through orderlines
-				foreach($orderLines->getItems() as $ol){					
-					$orderAdditonalFields = $orderData["order_additional_fields"];
-					$orderCustomer = $orderData["customer"]->getData()["billing_address"]->getData();
-					$orderShipping = $orderData["customer"]->getData()["shipping_address"]->getData();		
-					
-					$orderOffer = $ol->getData()["offer"];
-					$orderHistory = $ol->getData()["history"];
-					
-					//Add items of orders to array
-					array_push($order, array(
-						$orderAdditonalFields->getItems()[count($orderAdditonalFields->getItems())-1]->getData()["value"],
-						$orderId,
-						$orderCustomer["company"],
-						$orderCustomer["firstname"] . " " . $orderCustomer["lastname"],
-						$orderCustomer["street_1"] . " " . $orderCustomer["street_2"],
-						$orderCustomer["zip_code"],
-						$orderCustomer["city"],
-						$orderCustomer["country"],
-						'',
-						$orderCustomer["company"],
-						$orderShipping["firstname"] . " " . $orderShipping["lastname"],
-						$orderShipping["street_1"] . " " . $orderShipping["street_2"],
-						$orderShipping["zip_code"],
-						$orderShipping["city"],
-						$orderShipping["country"],
-						'',
-						$ol->getData()["offer"]->getData()["sku"],
-						$orderOffer->getData()["price"],
-						$shippingPrice,
-						$ol->getData()["commission"]->getData()["fee"] / $ol->getData()["quantity"],
-						$orderData["has_customer_message"],
-						$orderData["paymentType"],
-						$ol->getData()["quantity"],
-						$orderHistory->getData()["created_date"]->format('Y-m-d\TH:i:s'),
-						$orderHistory->getData()["last_updated_date"]->format('Y-m-d\TH:i:s'),
-						gmdate("Y-m-d\TH:i:s", time()+3600)						
-					));
-				}
-
-				echo $orderId." got parsed. ";
-
-				//Write order to csv
-				writeToCsv($order);
-			
-				//Write current date to txt
-				writeLast();
 			}
 			
 		}	
