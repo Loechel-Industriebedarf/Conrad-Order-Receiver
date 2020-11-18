@@ -83,11 +83,12 @@ function downloadAPIResult($result, $api_url, $api_key){
 			}	
 			//Only write order, if it was accepted
 			else if($orderState == "SHIPPING"){
-				$diff_minutes = (time()+3600 - $orderData["acceptance_decision_date"]->getTimestamp()) / 60;
-				//echo $diff_minutes."<br><br>";
+				//$diff_minutes = (time()+3600 - $orderData["acceptance_decision_date"]->getTimestamp()) / 60;
+				$diff_minutes = (strtotime("now") - $orderData["acceptance_decision_date"]->getTimestamp()) / 60;
+				echo $orderData["acceptance_decision_date"]->format("Y-m-d\TH:i:s")." ".date('Y-m-d\TH:i:s', strtotime("now"))." ".$diff_minutes."<br><br>";
 				
-				//Only import orders younger than 60 minutes
-				if($diff_minutes < 60){
+				//Only import orders younger than 30 minutes
+				if($diff_minutes < 30){
 					//Get shipping price
 					//We need the shipping price in every line of the csv, or our erp system throws an error
 					$shippingPrice = 0;
@@ -136,7 +137,7 @@ function downloadAPIResult($result, $api_url, $api_key){
 							$ol->getData()["quantity"],
 							$orderHistory->getData()["created_date"]->format('Y-m-d\TH:i:s'),
 							$orderHistory->getData()["last_updated_date"]->format('Y-m-d\TH:i:s'),
-							gmdate("Y-m-d\TH:i:s", time()+3600),
+							date('Y-m-d\TH:i:s', strtotime("now")),
 							$ol->getData()["offer"]->getData()["product"]->getData()["title"]						
 						));
 					}
