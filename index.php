@@ -22,7 +22,7 @@ if(!file_exists($csvPath)){
 		  $result = $api->getOrders($request);
 		  
 		  //Download result
-		  downloadAPIResult($result, $api_url, $api_key);
+		  downloadAPIResult($result, $api_url, $api_key, $last_execution);
 
 	} catch (\Exception $e) {
 		// An exception is thrown if the requested object is not found or if an error occurs
@@ -38,7 +38,7 @@ else{
 /*
 * If there are new orders, download them as csv file.
 */
-function downloadAPIResult($result, $api_url, $api_key){	
+function downloadAPIResult($result, $api_url, $api_key, $last_execution){	
 	$ordercount = $result->getTotalCount();
 		
 	//Check, if there are new orders
@@ -60,10 +60,10 @@ function downloadAPIResult($result, $api_url, $api_key){
 			
 			$orderId = $orderData["id"];
 
-			/*echo "<pre>";
+			echo "<pre>";
 			echo var_dump( $o );
 			echo "</pre>";
-			echo "<br><br><br>";*/
+			echo "<br><br><br>";
 			
 			//Accept order if it wasn't yet
 			if($orderState == "WAITING_ACCEPTANCE"){	
@@ -84,11 +84,11 @@ function downloadAPIResult($result, $api_url, $api_key){
 			//Only write order, if it was accepted
 			else if($orderState == "SHIPPING"){
 				//$diff_minutes = (time()+3600 - $orderData["acceptance_decision_date"]->getTimestamp()) / 60;
-				$diff_minutes = (strtotime("now") - $orderData["acceptance_decision_date"]->getTimestamp()) / 60;
+				$diff_minutes = (strtotime($last_execution) - $orderData["acceptance_decision_date"]->getTimestamp()) / 60;
 				echo $orderData["acceptance_decision_date"]->format("Y-m-d\TH:i:s")." ".date('Y-m-d\TH:i:s', strtotime("now"))." ".$diff_minutes."<br><br>";
 				
-				//Only import orders younger than 30 minutes
-				if($diff_minutes < 30){
+				//Only import new orders
+				if($diff_minutes < 0){
 					//Get shipping price
 					//We need the shipping price in every line of the csv, or our erp system throws an error
 					$shippingPrice = 0;
@@ -121,7 +121,7 @@ function downloadAPIResult($result, $api_url, $api_key){
 							$orderCustomer["city"],
 							$orderCustomer["country"],
 							'',
-							$orderCustomer["company"],
+							$orderShipping["company"],
 							$orderShipping["firstname"] . " " . $orderShipping["lastname"],
 							$orderShipping["street_1"] . " " . $orderShipping["street_2"],
 							$orderShipping["zip_code"],
