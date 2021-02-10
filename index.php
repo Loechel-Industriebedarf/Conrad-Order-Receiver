@@ -60,11 +60,13 @@ function downloadAPIResult($result, $api_url, $api_key, $last_execution){
 			
 			$orderId = $orderData["id"];
 
+			/*
 			echo "<pre>";
 			echo var_dump( $o );
 			echo "</pre>";
 			echo "<br><br><br>";
-			
+			*/
+
 			//Accept order if it wasn't yet
 			if($orderState == "WAITING_ACCEPTANCE"){	
 				$acceptOrderArray = array();
@@ -197,7 +199,7 @@ function generateHeadline($order){
 * Write the last execution date to txt.
 */
 function writeLast(){
-	$time = date("Y-m-d\TH:i:s", strtotime('-1 minute'));
+	$time = date("Y-m-d\TH:i:s", strtotime('now'));
 	$fp = fopen('last.txt', 'w+');
 	fwrite($fp, $time);
 	fclose($fp);
