@@ -199,7 +199,7 @@ function generateHeadline($order){
 * Write the last execution date to txt.
 */
 function writeLast(){
-	$time = date("Y-m-d\TH:i:s", strtotime('now'));
+	$time = date("Y-m-d\TH:i:s", strtotime('-10 seconds'));
 	$fp = fopen('last.txt', 'w+');
 	fwrite($fp, $time);
 	fclose($fp);
