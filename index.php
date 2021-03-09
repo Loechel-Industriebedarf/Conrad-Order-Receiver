@@ -66,6 +66,7 @@ function downloadAPIResult($result, $api_url, $api_key, $last_execution){
 			echo "</pre>";
 			echo "<br><br><br>";
 			*/
+			
 
 			//Accept order if it wasn't yet
 			if($orderState == "WAITING_ACCEPTANCE"){	
@@ -84,7 +85,7 @@ function downloadAPIResult($result, $api_url, $api_key, $last_execution){
 				echo $orderId." was accepted successfully.";
 			}	
 			//Only write order, if it was accepted
-			else if($orderState == "SHIPPING"){
+			else{
 				//$diff_minutes = (time()+3600 - $orderData["acceptance_decision_date"]->getTimestamp()) / 60;
 				$diff_minutes = (strtotime($last_execution) - $orderData["acceptance_decision_date"]->getTimestamp()) / 60;
 				echo $orderData["acceptance_decision_date"]->format("Y-m-d\TH:i:s")." ".date('Y-m-d\TH:i:s', strtotime("now"))." ".$diff_minutes."<br><br>";
@@ -139,8 +140,8 @@ function downloadAPIResult($result, $api_url, $api_key, $last_execution){
 							$ol->getData()["quantity"],
 							$orderHistory->getData()["created_date"]->format('Y-m-d\TH:i:s'),
 							$orderHistory->getData()["last_updated_date"]->format('Y-m-d\TH:i:s'),
-							date('Y-m-d\TH:i:s', strtotime("now")),
-							$ol->getData()["offer"]->getData()["product"]->getData()["title"]						
+							$orderData["acceptance_decision_date"]->format("Y-m-d\TH:i:s"),
+							date('Y-m-d\TH:i:s', strtotime($last_execution))
 						));
 					}
 
@@ -190,6 +191,7 @@ function generateHeadline($order){
 		'Anzahl bestellt',
 		'Bestellzeitpunkt',
 		'Updatezeitpunkt',
+		'Bezahlzeitpunkt',
 		'Abholzeitpunkt'
 	));
 	return $order;
