@@ -85,7 +85,7 @@ function downloadAPIResult($result, $api_url, $api_key, $last_execution){
 				echo $orderId." was accepted successfully.";
 			}	
 			//Only write order, if it was accepted
-			else{
+			else if ($orderState == "SHIPPING"){
 				//$diff_minutes = (time()+3600 - $orderData["acceptance_decision_date"]->getTimestamp()) / 60;
 				$diff_minutes = (strtotime($last_execution) - $orderData["acceptance_decision_date"]->getTimestamp()) / 60;
 				echo $orderData["acceptance_decision_date"]->format("Y-m-d\TH:i:s")." ".date('Y-m-d\TH:i:s', strtotime("now"))." ".$diff_minutes."<br><br>";
