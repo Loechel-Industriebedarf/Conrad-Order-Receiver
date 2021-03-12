@@ -59,8 +59,9 @@ function downloadAPIResult($result, $api_url, $api_key, $last_execution){
 			$orderState = $orderLines->getItems()[0]->getData()["status"]->getData()["state"];
 			
 			$orderId = $orderData["id"];
-
+			
 			/*
+			echo $orderData["transaction_date"]->format("Y-m-d\TH:i:s");
 			echo "<pre>";
 			echo var_dump( $o );
 			echo "</pre>";
@@ -75,9 +76,7 @@ function downloadAPIResult($result, $api_url, $api_key, $last_execution){
 				foreach($orderLines->getItems() as $ol){
 					array_push($acceptOrderArray, new AcceptOrderLine(['id' => $ol->getData()["id"], 'accepted' => true]));
 				}	
-				
-				//echo "<pre>".var_dump($acceptOrderArray)."</pre>";
-				
+								
 				$api = new ShopApiClient($api_url, $api_key, null);
 				$request = new AcceptOrderRequest($orderId, $acceptOrderArray);
 				$api->acceptOrder($request);
@@ -85,10 +84,10 @@ function downloadAPIResult($result, $api_url, $api_key, $last_execution){
 				echo $orderId." was accepted successfully.";
 			}	
 			//Only write order, if it was accepted
+			//acceptance_decision_date
 			else if ($orderState == "SHIPPING"){
-				//$diff_minutes = (time()+3600 - $orderData["acceptance_decision_date"]->getTimestamp()) / 60;
-				$diff_minutes = (strtotime($last_execution) - $orderData["acceptance_decision_date"]->getTimestamp()) / 60;
-				echo $orderData["acceptance_decision_date"]->format("Y-m-d\TH:i:s")." ".date('Y-m-d\TH:i:s', strtotime("now"))." ".$diff_minutes."<br><br>";
+				$diff_minutes = (strtotime($last_execution) - $orderData["last_updated_date"]->getTimestamp()) / 60;
+				echo $orderData["last_updated_date"]->format("Y-m-d\TH:i:s")." ".date('Y-m-d\TH:i:s', strtotime("now"))." ".$diff_minutes."<br><br>";
 				
 				//Only import new orders
 				if($diff_minutes < 0){
