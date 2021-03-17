@@ -60,13 +60,12 @@ function downloadAPIResult($result, $api_url, $api_key, $last_execution){
 			
 			$orderId = $orderData["id"];
 			
-			/*
-			echo $orderData["transaction_date"]->format("Y-m-d\TH:i:s");
+			
 			echo "<pre>";
 			echo var_dump( $o );
 			echo "</pre>";
 			echo "<br><br><br>";
-			*/
+			
 			
 
 			//Accept order if it wasn't yet
@@ -87,10 +86,11 @@ function downloadAPIResult($result, $api_url, $api_key, $last_execution){
 			//acceptance_decision_date
 			else if ($orderState == "SHIPPING"){
 				$diff_minutes = (strtotime($last_execution) - $orderData["last_updated_date"]->getTimestamp()) / 60;
-				echo $orderData["last_updated_date"]->format("Y-m-d\TH:i:s")." ".date('Y-m-d\TH:i:s', strtotime("now"))." ".$diff_minutes."<br><br>";
+				$ship_deadline = (strtotime($last_execution) - $orderData["shipping_deadline"]->getTimestamp()) / 60;
+				echo " Last Update: " . $orderData["last_updated_date"]->format("Y-m-d\TH:i:s")." Now: ".date('Y-m-d\TH:i:s', strtotime("now"))." DIFF: ".$diff_minutes. " DEADLINE: " . $ship_deadline . "<br><br>";
 				
 				//Only import new orders
-				if($diff_minutes < 0){
+				if($diff_minutes < 0 && $ship_deadline < 0){
 					//Get shipping price
 					//We need the shipping price in every line of the csv, or our erp system throws an error
 					$shippingPrice = 0;
